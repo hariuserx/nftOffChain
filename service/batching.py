@@ -12,14 +12,19 @@ start_time = time.time()
 checker_start_time = time.time()
 
 
-def run_ms_ia_final_section(nft_data, owner_address, batch):
-    logging.info("Initiating Final section transfer of NFT_ID %s (MS-IA)", nft_data[0].nft_id)
+def run_ms_ia_final_section(batch):
+    logging.info("Initiating Final section batch transfer")
     # Final section
-    if nft_data[0].owner != owner_address:
-        logging.error("Unauthorized transaction detected at Off-Chain in final section of MS-IA. Not an owner. \n"
-                      "Try to update the balance sheet")
-    else:
-        transfer_nft_in_block_chain_batch(batch)
+
+    filtered_batch = []
+    for nft_data in batch:
+        if nft_data[0].owner != nft_data[1]:
+            logging.error("Unauthorized transaction detected at Off-Chain in final section of MS-IA. Not an owner. \n"
+                          "Try to update the balance sheet")
+        else:
+            filtered_batch.append(nft_data)
+
+    transfer_nft_in_block_chain_batch(filtered_batch)
 
 
 # This is the batching strategy with batch size N.
@@ -42,11 +47,11 @@ def ms_ia_on_chain_consumer(database):
                         in_process_nfts.remove(nft)
                     elif status == "Failure":
                         # Can be done in a separate thread.
-                        actual_owner = str(random.randint(0, len(database.data) - 1)) + "x"
+                        actual_owner = str(random.randint(0, len(database.data_ms_ia_on_chain) - 1)) + "x"
                         while actual_owner == nft[1]:
-                            actual_owner = str(random.randint(0, len(database.data) - 1)) + "x"
+                            actual_owner = str(random.randint(0, len(database.data_ms_ia_on_chain) - 1)) + "x"
 
-                        database.update(nft[0].nft_id, actual_owner)
+                        database.update_on_chain_ms_ia(nft[0].nft_id, actual_owner)
                         time.sleep(1)
 
                         logging.error("Transfer un-successful at the OnChain. This is not the final state. \n"

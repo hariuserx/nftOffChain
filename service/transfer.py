@@ -18,7 +18,10 @@ def run_ms_ia_final_section(nft_data, owner_address, receiver_address, database)
     logging.info("Initiating Final section transfer of NFT_ID %s (MS-IA)", nft_data[0].nft_id)
     # Final section
 
-    with nft_data[2]:
+    nft_id = nft_data[0].nft_id
+    nft_data = database.data_ms_ia_on_chain[nft_id]
+
+    with nft_data[1]:
         # release the lock for the next command
         global sentinel_ms_ia
         sentinel_ms_ia = True
@@ -27,16 +30,17 @@ def run_ms_ia_final_section(nft_data, owner_address, receiver_address, database)
             logging.error("Unauthorized transaction detected at Off-Chain in final section of MS-IA. Not an owner. \n"
                           "Try to update the balance sheet")
         else:
-            response = transfer_nft_in_block_chain(nft_data[0].nft_id, owner_address, receiver_address)
+            response = transfer_nft_in_block_chain(nft_id, owner_address, receiver_address)
             if response:
                 logging.info("Transfer successful at the OnChain.")
+                database.update_on_chain_ms_ia(nft_id, receiver_address)
             else:
                 actual_owner = str(random.randint(0, len(database.data) - 1)) + "x"
                 while actual_owner == owner_address:
                     actual_owner = str(random.randint(0, len(database.data) - 1)) + "x"
 
-                database.update(nft_data[0].nft_id, actual_owner)
-                time.sleep(1)
+                database.update_on_chain_ms_ia(nft_id, actual_owner)
+                time.sleep(0.05)
 
                 logging.error("Transfer un-successful at the OnChain. This is not the final state. \n"
                               "Actual owner is %s", actual_owner)
@@ -67,7 +71,7 @@ def ms_ia(owner_address, receiver_address, nft_id, database):
         else:
             # initial section
             database.update(nft_id, receiver_address)
-            time.sleep(1)
+            time.sleep(0.05)
             logging.info("Transfer successful at the OffChain. This is not the final state")
             queue.put((nft_data, owner_address, receiver_address, database))
 
@@ -87,7 +91,7 @@ def ms_sr(owner_address, receiver_address, nft_id, database):
         else:
             # initial section
             database.update(nft_id, receiver_address)
-            time.sleep(1)
+            time.sleep(0.05)
             logging.info("Transfer successful at the OffChain. This is not the final state")
             # Final section
             response = transfer_nft_in_block_chain(nft_id, owner_address, receiver_address)
@@ -99,7 +103,7 @@ def ms_sr(owner_address, receiver_address, nft_id, database):
                     actual_owner = str(random.randint(0, len(database.data) - 1)) + "x"
 
                 database.update(nft_id, actual_owner)
-                time.sleep(1)
+                time.sleep(0.05)
 
                 logging.error("Transfer un-successful at the OnChain. This is not the final state. \n"
                               "Actual owner is %s", actual_owner)

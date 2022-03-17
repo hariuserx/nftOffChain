@@ -1,10 +1,12 @@
 # Entry point
 import threading
+import time
 
 from database.database import FakeDatabase
 from initialize import initialize_nft_data
 from service.transfer import transfer_nft, ms_ia_on_chain_consumer
 import logging
+import service.transfer
 
 # initialize logger
 from service.view import print_nft_data
@@ -14,10 +16,10 @@ logging.basicConfig(format=log_format, level=logging.INFO, datefmt="%H:%M:%S")
 
 
 # initialize the NFT data from Blockchain
-nft_data = initialize_nft_data()
+nft_data, nft_on_c_ms_ia_data = initialize_nft_data()
 
 # initialize the database
-database = FakeDatabase(data=nft_data)
+database = FakeDatabase(data=nft_data, data_ms_ia_on_chain=nft_on_c_ms_ia_data)
 
 # By default we use MS-IA
 use_ms_sr = False
@@ -31,6 +33,9 @@ while True:
     print("-------------------------------")
     command = input("Enter a command:\n")
     if command == "quit":
+        time.sleep(2)
+        while not service.transfer.queue.empty():
+            pass
         print("Good Bye!!")
         break
     elif command == "help":
