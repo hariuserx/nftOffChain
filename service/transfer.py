@@ -22,19 +22,24 @@ def run_ms_ia_final_section(nft_data, owner_address, receiver_address, database)
         # release the lock for the next command
         global sentinel_ms_ia
         sentinel_ms_ia = True
-        response = transfer_nft_in_block_chain()
-        if response:
-            logging.info("Transfer successful at the OnChain.")
+
+        if nft_data[0].owner != owner_address:
+            logging.error("Unauthorized transaction detected at Off-Chain in final section of MS-IA. Not an owner. \n"
+                          "Try to update the balance sheet")
         else:
-            actual_owner = str(random.randint(0, len(database.data) - 1)) + "x"
-            while actual_owner == owner_address:
+            response = transfer_nft_in_block_chain()
+            if response:
+                logging.info("Transfer successful at the OnChain.")
+            else:
                 actual_owner = str(random.randint(0, len(database.data) - 1)) + "x"
+                while actual_owner == owner_address:
+                    actual_owner = str(random.randint(0, len(database.data) - 1)) + "x"
 
-            database.update(nft_data[0].nft_id, actual_owner)
-            time.sleep(1)
+                database.update(nft_data[0].nft_id, actual_owner)
+                time.sleep(1)
 
-            logging.error("Transfer un-successful at the OnChain. This is not the final state. \n"
-                          "Actual owner is %s", actual_owner)
+                logging.error("Transfer un-successful at the OnChain. This is not the final state. \n"
+                              "Actual owner is %s", actual_owner)
 
 
 def ms_ia_on_chain_consumer():
@@ -101,16 +106,15 @@ def ms_sr(owner_address, receiver_address, nft_id, database):
 
 
 def transfer_nft(owner_address, receiver_address, nft_id, database, use_ms_sr):
+    global sentinel
     if use_ms_sr:
         t = threading.Thread(target=ms_sr, args=(owner_address, receiver_address, nft_id, database))
-        global sentinel
         sentinel = False
         t.start()
         while sentinel is not True:
             pass
     else:
         t = threading.Thread(target=ms_ia, args=(owner_address, receiver_address, nft_id, database))
-        global sentinel
         sentinel = False
         t.start()
         while sentinel is not True:
