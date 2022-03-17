@@ -1,7 +1,9 @@
 # Entry point
+import threading
+
 from database.database import FakeDatabase
 from initialize import initialize_nft_data
-from service.transfer import transfer_nft
+from service.transfer import transfer_nft, ms_ia_on_chain_consumer
 import logging
 
 # initialize logger
@@ -19,6 +21,9 @@ database = FakeDatabase(data=nft_data)
 
 # By default we use MS-IA
 use_ms_sr = False
+
+# Initialize MS-IA consumer
+threading.Thread(target=ms_ia_on_chain_consumer, daemon=True).start()
 
 print("Type \"help\" for help or enter \"quit\" to quit")
 
