@@ -27,7 +27,7 @@ def run_ms_ia_final_section(nft_data, owner_address, receiver_address, database)
             logging.error("Unauthorized transaction detected at Off-Chain in final section of MS-IA. Not an owner. \n"
                           "Try to update the balance sheet")
         else:
-            response = transfer_nft_in_block_chain()
+            response = transfer_nft_in_block_chain(nft_data[0].nft_id, owner_address, receiver_address)
             if response:
                 logging.info("Transfer successful at the OnChain.")
             else:
@@ -90,7 +90,7 @@ def ms_sr(owner_address, receiver_address, nft_id, database):
             time.sleep(1)
             logging.info("Transfer successful at the OffChain. This is not the final state")
             # Final section
-            response = transfer_nft_in_block_chain()
+            response = transfer_nft_in_block_chain(nft_id, owner_address, receiver_address)
             if response:
                 logging.info("Transfer successful at the OnChain.")
             else:
