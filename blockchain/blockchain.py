@@ -4,7 +4,8 @@ import time
 
 # Mock blockchain layer. Returns True for success response and False for failure
 def transfer_nft_in_block_chain(nft_id, owner, receiver):
-    time.sleep(5)
+    rand_int = random.randint(20, 40)
+    time.sleep(rand_int)
     value = random.random()
 
     # use this to control failure ratio

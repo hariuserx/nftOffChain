@@ -13,7 +13,7 @@ def initialize_nft_data():
     data = {}
     data_ms_ia_on_chain = {}
 
-    for nft_id in range(10):
+    for nft_id in range(2000):
         nft = NFTData(nft_id=nft_id, owner=str(nft_id) + "x")
         nft_dup = NFTData(nft_id=nft_id, owner=str(nft_id) + "x")
         data[nft_id] = (nft, threading.Lock())

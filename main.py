@@ -37,6 +37,7 @@ while True:
         while not service.transfer.queue.empty():
             pass
         print("Good Bye!!")
+        time.sleep(500)
         break
     elif command == "help":
         print("This is the interface to interact with the NFT transaction Off Chain\n"
